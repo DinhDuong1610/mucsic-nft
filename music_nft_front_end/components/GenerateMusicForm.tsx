@@ -4,8 +4,20 @@ import { useState } from 'react'
 import { Button } from './ui/button'
 import { Textarea } from './ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { Progress } from './ui/progress'
-import { Play, Loader2, ExternalLink } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  Database,
+  Disc3,
+  ExternalLink,
+  Image as ImageIcon,
+  Loader2,
+  Music2,
+  Play,
+  Sparkles,
+  Wand2,
+} from 'lucide-react'
 import { useToast } from './ui/use-toast'
 import axios from 'axios'
 
@@ -50,8 +62,8 @@ export function GenerateMusicForm() {
 
       // Hiển thị nhạc và ảnh NGAY SAU KHI GENERATE XONG
       setAudioUrl(aiResponse.data.musicUrl)
-      setStatus({ 
-        status: 'uploading', 
+      setStatus({
+        status: 'uploading',
         progress: 50,
         musicUrl: aiResponse.data.musicUrl,
         coverUrl: aiResponse.data.coverUrl,
@@ -75,16 +87,10 @@ export function GenerateMusicForm() {
         tokenURIGateway: ipfsResponse.data.tokenURIGateway,
       })
 
-      // Giữ audioUrl từ local server để phát nhạc nhanh hơn
-      // setAudioUrl(ipfsResponse.data.musicUrl)
-
       // Lưu vào localStorage để dùng ở trang mint
-      // Lưu cả URL local (nhanh) và IPFS (cho NFT metadata)
       localStorage.setItem('pendingMint', JSON.stringify({
-        // Local URLs - dùng để hiển thị nhanh
         musicUrlLocal: aiResponse.data.musicUrl,
         coverUrlLocal: aiResponse.data.coverUrl,
-        // IPFS URLs - dùng cho NFT metadata
         musicUrlIpfs: ipfsResponse.data.musicUrl,
         coverUrlIpfs: ipfsResponse.data.coverUrl,
         metadataUri: ipfsResponse.data.metadataUri,
@@ -110,144 +116,296 @@ export function GenerateMusicForm() {
     }
   }
 
-  return (
-    <Card className="glass-card border-white/30 shadow-2xl">
-      <CardHeader>
-        <CardTitle className="text-3xl font-bold text-white">Tạo Nhạc AI</CardTitle>
-        <CardDescription className="text-white/70 text-base">
-          Nhập mô tả nhạc bạn muốn tạo, ví dụ: "Nhạc jazz nhẹ nhàng, có piano và saxophone"
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <Textarea
-          placeholder="Nhập prompt mô tả nhạc bạn muốn tạo..."
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          rows={4}
-          disabled={status.status === 'generating' || status.status === 'uploading'}
-          className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-purple-400 focus:ring-purple-400/50 resize-none text-base"
-        />
+  const isProcessing = status.status === 'generating' || status.status === 'uploading'
 
-        {status.status !== 'idle' && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-white/90 font-medium">
-                {status.status === 'generating' && '🎵 Đang tạo nhạc...'}
-                {status.status === 'uploading' && '📤 Đang upload lên IPFS...'}
-                {status.status === 'completed' && '✅ Hoàn thành!'}
-                {status.status === 'error' && '❌ Có lỗi xảy ra'}
-              </span>
-              <span className="text-white font-bold">{status.progress}%</span>
+  const statusLabel = {
+    idle: 'Sẵn sàng tạo nhạc',
+    generating: 'Đang tạo nhạc bằng AI...',
+    uploading: 'Đang upload lên IPFS...',
+    completed: 'Hoàn thành',
+    error: 'Có lỗi xảy ra',
+  }[status.status]
+
+  return (
+    <Card className="studio-card border-white/10 bg-transparent p-5 shadow-none sm:p-6 lg:p-8">
+      <CardHeader className="space-y-5 p-0 pb-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="studio-badge mb-4 w-fit">
+              <Wand2 className="h-4 w-4 text-cyan-200" />
+              AI Generator
             </div>
-            <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
-              <div 
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${status.progress}%` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+
+            <CardTitle className="text-3xl font-black text-white sm:text-4xl">
+              Tạo nhạc từ prompt
+            </CardTitle>
+
+            <CardDescription className="mt-3 max-w-2xl text-base leading-7 text-slate-400">
+              Mô tả cảm xúc, thể loại, nhạc cụ hoặc bối cảnh. AI sẽ tạo file nhạc,
+              ảnh cover và tự động đưa metadata lên IPFS.
+            </CardDescription>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4 backdrop-blur-xl">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-400/15">
+                <Sparkles className="h-5 w-5 text-purple-200" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-white">AI Pipeline</p>
+                <p className="text-xs font-medium text-slate-500">MusicGen + IPFS</p>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-6 p-0">
+        <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
+          <div className="space-y-4">
+            <label className="flex items-center gap-2 text-sm font-black text-white">
+              <Music2 className="h-4 w-4 text-cyan-200" />
+              Prompt tạo nhạc
+            </label>
+
+            <div className="relative">
+              <Textarea
+                placeholder='Ví dụ: "A calm piano melody with soft ambient background and cinematic atmosphere"'
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                rows={7}
+                disabled={isProcessing}
+                className="studio-input min-h-[190px] resize-none border-white/10 bg-slate-950/45 p-5 text-base leading-7 text-white placeholder:text-slate-500"
+              />
+
+              <div className="pointer-events-none absolute bottom-4 right-4 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-bold text-slate-400 backdrop-blur-xl">
+                {prompt.length} ký tự
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                  Style
+                </p>
+                <p className="mt-1 text-sm font-bold text-slate-200">
+                  Piano, Jazz, EDM
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                  Mood
+                </p>
+                <p className="mt-1 text-sm font-bold text-slate-200">
+                  Calm, Epic, Dark
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                  Output
+                </p>
+                <p className="mt-1 text-sm font-bold text-slate-200">
+                  Track + Cover
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[26px] border border-white/10 bg-slate-950/45 p-5">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-200">
+                  Status
+                </p>
+                <h3 className="mt-1 text-xl font-black text-white">
+                  {statusLabel}
+                </h3>
+              </div>
+
+              <div
+                className={[
+                  "flex h-12 w-12 items-center justify-center rounded-2xl",
+                  status.status === 'completed'
+                    ? "bg-emerald-400/15"
+                    : status.status === 'error'
+                      ? "bg-rose-400/15"
+                      : "bg-purple-400/15",
+                ].join(" ")}
+              >
+                {status.status === 'completed' ? (
+                  <CheckCircle2 className="h-6 w-6 text-emerald-200" />
+                ) : status.status === 'error' ? (
+                  <AlertTriangle className="h-6 w-6 text-rose-200" />
+                ) : isProcessing ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-cyan-200" />
+                ) : (
+                  <Disc3 className="h-6 w-6 text-purple-200" />
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-bold text-slate-300">Tiến trình</span>
+                <span className="font-black text-white">{status.progress}%</span>
+              </div>
+
+              <div className="relative h-3 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-purple-500 via-fuchsia-500 to-cyan-400 transition-all duration-500"
+                  style={{ width: `${status.progress}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+                </div>
+              </div>
+
+              {status.error && (
+                <div className="rounded-2xl border border-rose-300/20 bg-rose-400/10 p-4 text-sm font-medium text-rose-100">
+                  {status.error}
+                </div>
+              )}
+            </div>
+
+            <Button
+              onClick={handleGenerate}
+              disabled={isProcessing}
+              className="studio-button mt-6 w-full px-6 py-6 text-base"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Đang xử lý...
+                </>
+              ) : (
+                <>
+                  <Play className="mr-2 h-5 w-5" />
+                  Tạo nhạc AI
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
 
         {(status.status === 'uploading' || status.status === 'completed') && audioUrl && (
-          <>
-            <div className="flex items-center gap-4 p-4 bg-white/10 rounded-xl border border-white/20 backdrop-blur-sm">
-              {status.coverUrl && (
-                <img
-                  src={status.coverUrl}
-                  alt="Cover"
-                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0 shadow-lg"
-                />
+          <div className="rounded-[28px] border border-white/10 bg-slate-950/45 p-5">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-cyan-400/15">
+                <Music2 className="h-5 w-5 text-cyan-200" />
+              </div>
+              <div>
+                <h3 className="font-black text-white">Bản xem trước</h3>
+                <p className="text-sm text-slate-500">
+                  Nghe thử track vừa được tạo trước khi mint NFT.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-[160px_1fr]">
+              {status.coverUrl ? (
+                <div className="nft-media-frame aspect-square w-full overflow-hidden">
+                  <img
+                    src={status.coverUrl}
+                    alt="Cover"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="nft-media-frame flex aspect-square w-full items-center justify-center">
+                  <ImageIcon className="h-10 w-10 text-slate-500" />
+                </div>
               )}
-              <div className="flex-1 min-w-0">
+
+              <div className="flex min-w-0 flex-col justify-center rounded-3xl border border-white/10 bg-white/[0.035] p-5">
+                <p className="mb-3 text-sm font-bold text-slate-400">
+                  Generated track
+                </p>
                 <audio controls className="w-full">
                   <source src={audioUrl} type="audio/wav" />
                   Trình duyệt của bạn không hỗ trợ audio.
                 </audio>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* IPFS Information */}
-            {status.metadataUri && (
-              <div className="space-y-3 p-5 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl border border-white/30 backdrop-blur-sm">
-                <h4 className="font-bold text-white text-base flex items-center gap-2">
-                  <span className="text-xl">📦</span>
-                  IPFS Information
-                </h4>
+        {status.metadataUri && (
+          <div className="rounded-[28px] border border-cyan-300/15 bg-cyan-400/10 p-5">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-300/15">
+                <Database className="h-5 w-5 text-cyan-100" />
+              </div>
+              <div>
+                <h3 className="font-black text-white">IPFS Metadata</h3>
+                <p className="text-sm text-cyan-100/65">
+                  Token URI đã sẵn sàng để mint NFT.
+                </p>
+              </div>
+            </div>
 
-                {status.folderCid && (
-                  <div className="text-sm">
-                    <span className="text-white/70 font-medium">Folder CID:</span>
-                    <p className="font-mono text-white bg-black/20 p-2 rounded mt-1 break-all text-xs">{status.folderCid}</p>
-                  </div>
-                )}
-
-                <div className="text-sm">
-                  <span className="text-white/70 font-medium">Token URI:</span>
-                  <p className="font-mono text-white bg-black/20 p-2 rounded mt-1 break-all text-xs">{status.metadataUri}</p>
+            {/* <div className="space-y-4">
+              {status.folderCid && (
+                <div>
+                  <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-100/70">
+                    Folder CID
+                  </p>
+                  <p className="break-all rounded-2xl border border-white/10 bg-slate-950/55 p-3 font-mono text-xs text-cyan-50">
+                    {status.folderCid}
+                  </p>
                 </div>
+              )}
 
+              <div>
+                <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-100/70">
+                  Token URI
+                </p>
+                <p className="break-all rounded-2xl border border-white/10 bg-slate-950/55 p-3 font-mono text-xs text-cyan-50">
+                  {status.metadataUri}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
                 {status.tokenURIGateway && (
-                  <div className="text-sm">
-                    <a
-                      href={status.tokenURIGateway}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-cyan-300 hover:text-cyan-100 underline font-medium inline-flex items-center gap-1 transition-colors"
-                    >
-                      🔗 Xem metadata trên IPFS Gateway
-                    </a>
-                  </div>
+                  <a
+                    href={status.tokenURIGateway}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="studio-button-secondary px-5 py-3 text-sm"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Xem metadata
+                  </a>
                 )}
 
                 {status.gatewayUrl && (
-                  <div className="text-sm">
-                    <a
-                      href={status.gatewayUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-cyan-300 hover:text-cyan-100 underline font-medium inline-flex items-center gap-1 transition-colors"
-                    >
-                      📁 Xem folder trên IPFS Gateway
-                    </a>
-                  </div>
+                  <a
+                    href={status.gatewayUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="studio-button-secondary px-5 py-3 text-sm"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Xem IPFS folder
+                  </a>
                 )}
               </div>
-            )}
-          </>
+            </div> */}
+          </div>
         )}
 
-        <div className="flex gap-3">
-          <Button
-            onClick={handleGenerate}
-            disabled={status.status === 'generating' || status.status === 'uploading'}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-6 text-base shadow-lg hover:shadow-purple-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {status.status === 'generating' || status.status === 'uploading' ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Đang xử lý...
-              </>
-            ) : (
-              <>
-                <Play className="w-5 h-5 mr-2" />
-                Tạo nhạc
-              </>
-            )}
-          </Button>
-          {status.status === 'completed' && (
+        {status.status === 'completed' && (
+          <div className="flex flex-col gap-3 sm:flex-row">
             <Button
-              variant="outline"
               onClick={() => window.location.href = '/mint'}
-              className="bg-white/10 border-white/30 text-white hover:bg-white/20 font-semibold py-6 px-8 text-base backdrop-blur-sm transition-all duration-300"
+              className="studio-button flex-1 px-6 py-6 text-base"
             >
-              Mint NFT
+              Mint NFT ngay
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
 }
-
